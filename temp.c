@@ -3,10 +3,14 @@
 /* print Fahrenheit-Celsius table
 for fahr = 0, 20, .... , 300 */
 
-/* clang program.c -o program*/
+/* TO COMPILE: clang program.c -o program*/
+/* TO RUN: ./program */
+
 
 int main()
 {
+
+	/* print Fahrenheit-Celsius table*/
 	float fahr, celsius;
 	int lower, upper, step;
 
