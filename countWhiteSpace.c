@@ -4,14 +4,18 @@
 /* TO RUN: ./program */
 
 
+/* count lines in input */
 int main()
 {
 
-	int c;
+	int c, n1;
 
+	n1 = 0;
 	while ( (c = getchar()) != EOF) {
-		putchar(c);
-		c = getchar();
+		if ( (c == '\n') || (c == '\t') || (c == ' '))
+			++n1;
+		printf("%d\n", n1);
 	}
+
 
 }
