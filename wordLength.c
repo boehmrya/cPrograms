@@ -1,39 +1,30 @@
 #include <stdio.h>
 
-/* TO COMPILE: clang program.c -o program*/
-/* TO RUN: ./program */
 
-//hello there you little person
+int countWords(char wordString[]) {
+	int len, i, start, count;
+	len = strlen(wordString);
+	i = 0;
+	while (i < len) {
+		if (wordString[i] == ' ' || wordString[i] == '\t' || wordString[i] == '\n') {
+			count++;
+		}
+	}
+	return count;
+}
 
 /* plot word length */
-int main()
-{
+int main() {
+	int i, count, spaces;
+	char wordline[512];
 
-	// initialize variables
-	int c, i, j, k, count;
-	int wordLengths[20];
+	// get first part of command
+    fgets(wordline, 512, stdin);
+    wordlinelen = strlen(wordline);
 
-	for (i = 0; i < 20; ++i)
-		wordLengths[i] = 0;
+	i = 0;
+	while (i < wordlinelen)	{
 
-	count = 0;
-	while ( (c = getchar()) != EOF) {
-		if ( c == ' ' || c == '\n' || c == '\t' ) {
-			++wordLengths[count];
-			
-			count = 0;
-		}
-		else {
-			++count;
-		}
-	}
-	for (j = 0; j < 20; ++j) {
-		printf("%d: ", j);
-		for (k = 0; k < wordLengths[j]; ++k) {
-			printf("-");
-		}
-		printf("\n");
-	}
-		
+	}	
 
 }
