@@ -52,14 +52,10 @@ int main() {
 		wordLenArr[i] = 0;
 	}
 
-	printf("%s\n", str);
-	printf("wordLengths: %d\n", wordLengths);
-
     // count word length frequency and store in array
     strlength = strlen(str);
 	i = 0;
 	while (i < strlength)	{
-		printf("strlength: %d\n", strlength);
 		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n') {
 			wordLenArr[count]++;
 			count = 0;
