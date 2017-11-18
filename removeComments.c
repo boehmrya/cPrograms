@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-/* TO COMPILE: clang enTab.c -o enTab */
-/* TO RUN: ./enTab */
-
-//hello   hey what are you    doing sir
+/* 
+TO COMPILE: clang removeComments.c -o removeComments
+TO RUN: ./removeComments sample.c newSample.c 
+*/
 
 #define MAXLINE 1000
 
@@ -18,90 +18,153 @@ int lineLength( char s[] ) {
 }
 
 
-/* reverse the string from, and copy it into string to. */
-void enTab(char to[], char from[]) {
-	int i, j, k, spaceCount, numTabs, len;
-
-	len = lineLength(from); // length of the line
-	i = 0, 
-	j = 0;
-	spaceCount = 0;
-	numTabs = 0;
-
-	while (i < len) {
-		if (from[i] == ' ') {
-			spaceCount += 1;
-			i++;
-		}
-		else {
-			if ( spaceCount > 1 ) {
-				numTabs = spaceCount / 2;
-				k = 0;
-				while ( k < numTabs ) {
-					to[j] = '\t';
-					j++;
-					k++;
-				}
-				if ( spaceCount % 2 == 1 ) {
-					to[j] = ' ';
-					j++;
-				}
-				// add next letter
-				to[j] = from[i];
-				j++;
-				i++;
-
-				// reset space and tab trackers
-				spaceCount = 0;
-				numTabs = 0;
-			}
-			else if ( spaceCount == 1 ) {
-				// add space
-				to[j] = ' ';
-				j++;
-
-				// add next letter
-				to[j] = from[i];
-				j++;
-				i++;
-				spaceCount = 0;
-			}
-			else {
-				to[j] = from[i];
-				j++;
-				i++;
-			}
-		}	
-	}
-}
-
-
-/* getline: read a line into s, return length */
-int getLine(char s[], int lim) {
-	int c, i;
-
-	for (i = 0; (i < (lim - 1)) && ((c = getchar()) != EOF) && (c != '\n'); i++ ) {
-		s[i] = c;
-	}
-	if (c == '\n') {
-		s[i] = c;
+/* returns first non-white-space index */
+int nonWhiteSpaceIndex( char s[] ) {
+	int i = 0;
+	while (( s[i] != ' ') && ( s[i] != '\t')) {
 		i++;
 	}
-	s[i] = '\0';
 	return i;
 }
 
 
-/* print longest input line */
-int main() {
-	int len; 		/* current line length */
-	char line[MAXLINE]; 	/* current input line */
-	char enTabLine[MAXLINE]; /* reversed line */
-
-	while ((len = getLine(line, MAXLINE)) > 0) {
-		enTab(enTabLine, line);
-		// check if only newline in cleaned line
-		printf("enTab line: %s\n", enTabLine);
+/* reverse the string from, and copy it into string to. */
+void removeComments(char to[], char from[]) {
+	int i, len;
+	i = nonWhiteSpaceIndex(from);
+	len = lineLength(from);
+	while (i < len) {
+		// if at a comment at the end of a line, just exit
+		if ((from[i] == '/') && (from[i + 1] == '/')) {
+			return;
+		}
+		else if ((from[i] == '/') && (from[i + 1] == '*')) {
+			return;
+		}
+		else {
+			to[i] = from[i];
+		}
+		i++;
 	}
+}
+
+
+/* checks if the entire line is a comment */
+int lineComment( char line[] ) {
+	int i = nonWhiteSpaceIndex(line);
+	if ((line[i] == '/') && ((line[i + 1] == '*') || (line[i + 1] == '/'))) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+/* checks if the entire line is a comment */
+int multiLineComment( char line[] ) {
+	int len = lineLength(line);
+	int endIndex = len - 1;
+	int i = nonWhiteSpaceIndex(line);
+	if ( len == 2 ) {
+		if ((line[i] == '/') && (line[i + 1] == '*')) {
+			return 1;
+		}
+		else if ((line[i] == '*') && (line[i + 1] == '/')) {
+			return 1;
+		}
+	}
+	else {
+		if ((line[i] == '/') && (line[i + 1] == '*')) {
+			if ((line[endIndex - 1] != '*') || (line[endIndex] != '/')) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+/* checks if we have reached the end of a multi line comment */
+int endMultiLineComment( char line[] ) {
+	int len = lineLength(line);
+	int endIndex = len - 1;
+	int i = nonWhiteSpaceIndex(line);
+	if ( len == 2 ) {
+		if ((line[i] == '*') && (line[i + 1] == '/')) {
+			return 1;
+		}
+	}
+	else if ( len > 2 ) {
+		if ((line[i] != '/') || (line[i + 1] != '*')) {
+			if ((line[endIndex - 1] == '*') && (line[endIndex] == '/')) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+/* read in file and execute the fcfs algorithm */
+int main( int argc, char *argv[] ) {
+	FILE *infile;
+	FILE *outfile;
+	char *outfilename;
+	char *infilename;
+	char line[MAXLINE]; // line with comments
+	char newLine[MAXLINE]; // line without comments
+	int multiComment = 0; // indicates if the whole line is a comment
+
+	if(argc == 3) {
+		// get filenames from command line arguments
+		infilename = argv[1];
+		outfilename = argv[2];
+
+		// open input and output files
+    	infile = fopen(infilename, "r");
+    	outfile = fopen(outfilename, "w+");
+
+    	// check and make sure input file exists
+    	if(infile == NULL) {
+      		perror("Error opening input file");
+      		return(-1);
+   		}
+
+   		// get lines from input file
+   		// write to output file without comments
+   		while (fgets (line, MAXLINE, infile) != NULL) {
+   			if (multiLineComment(line) == 1) {
+   				multiComment = 1;
+   			}
+   			else if (lineComment(line) == 1) {
+   				continue;
+   			}
+   			else {
+   				if (endMultiLineComment(line) == 1) {
+   					multiComment = 0;
+   				}
+   				else if (multiComment == 1) {
+   					continue;
+   				}
+   				else {
+   					// remove comments and write line to output file
+   					removeComments(newLine, line);
+   					fputs(newLine, outfile);
+   				}
+   			}
+   		}
+   		// close both files
+   		fclose(infile);
+   		fclose(outfile);
+   }
+	// errors for incorrect arguments
+	else if( argc > 3 ) {
+		printf("Too many arguments supplied.\n");
+	}
+	else {
+		printf("Two argument expected.\n");
+	}
+	return 0;
 }
 
