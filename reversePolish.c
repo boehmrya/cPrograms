@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 
 
 /* 
@@ -43,6 +44,50 @@ double pop(void) {
 	}
 }
 
+/* print top value of stack without removing it */
+void peek(void) {
+	if (sp > 0) {
+		printf("top stack value: %g\n", val[sp]);
+	}
+	else {
+		printf("stack empty");
+	}
+}
+
+
+/* duplicate the top value of the stack */
+void dupTop(double f) {
+	if (sp < MAXVAL) {
+		double f = val[sp];
+		val[sp++] = f;
+	}
+	else {
+		printf("error: stack full, can't duplicate top value %g\n", f);
+	}
+}
+
+
+/* duplicate the top value of the stack */
+void clear(void) {
+	while (sp > 0) {
+		val[--sp] = 0.0;
+	}
+	printf("stack clear");
+}
+
+
+/* swap the top two elements in the stack */
+void swapTop(void) {
+	if (sp > 0) {
+		double f = val[sp - 1];
+		val[sp - 1] = val[sp];
+		val[sp] = f;
+	}
+	else {
+		printf("empty stack");
+	}
+}
+
 
 /* get a (possibly pushed back) character */
 int getch(void) {
@@ -57,6 +102,22 @@ void ungetch(int c) {
 	}
 	else {
 		buf[bufp++] = c;
+	}
+}
+
+
+/* pushes entire string onto the input */
+void ungets(char s[]) {
+	int i = 0;
+	while (s[i] != '\0') {
+		if (bufp >= BUFSIZE) {
+			printf("ungets: too many characters\n");
+		}
+		else {
+
+			buf[bufp++] = s[i];
+		}
+		i++;
 	}
 }
 
@@ -97,10 +158,19 @@ int getop(char s[]) {
 }
 
 
+
 int main() {
 	int type;
 	double op2;
 	char s[MAXOP];
+	int iexp = 0; // number of exp chars
+	int isExp = 0; // are we currently on exp chars
+
+	int isin = 0; // number of sin chars
+	int isSin = 0; // are we currently on sin chars
+
+	int ipow = 0; // number of pow chars
+	int isPow = 0; // are we currently on pow chars
 
 	while ((type = getop(s)) != EOF) {
 		switch(type) {
@@ -120,6 +190,83 @@ int main() {
 			case '%':
 				op2 = pop();
 				push( (double) ((int) pop() % (int) op2));
+				break;
+			case 'e':
+				if (isExp == 0) {
+					iexp++;
+					isExp = 1;
+				}
+				else {
+					printf("out of place char e");
+				}
+				break;
+			case 'x':
+				if (isExp == 1) {
+					iexp++;
+				}
+				else {
+					printf("out of place char x");
+				}
+				break;
+			case 'p':
+				if (isExp == 1) {
+					iexp++;
+					if (iexp == 3) {
+						push(exp(pop()));
+						iexp = 0;
+						isExp = 0;
+					}
+				}
+				else if (isPow == 0) {
+					ipow++;
+					isPow = 1;
+				}
+				break;
+			case 's':
+				if (isSin == 0) {
+					isin++;
+					isSin = 1;
+				}
+				else {
+					printf("out of place char s");
+				}
+				break;
+			case 'i':
+				if (isSin == 1) {
+					isin++;
+				}
+				else {
+					printf("out of place char s");
+				}
+				break;
+			case 'n':
+				if (isSin == 1) {
+					isin++;
+				}
+				if (isin == 3) {
+					push(sin(pop()));
+					isin = 0;
+					isSin = 0;
+				}
+				break;
+			case 'o':
+				if (isPow == 1) {
+					ipow++;
+				}
+				else {
+					printf("out of place char o");
+				}
+				break;
+			case 'w':
+				if (isPow == 1) {
+					ipow++;
+				}
+				if (ipow == 3) {
+					op2 = pop();
+					push(pow(pop(), op2));
+					ipow = 0;
+					isPow = 0;
+				}
 				break;
 			case '/':
 				op2 = pop();
